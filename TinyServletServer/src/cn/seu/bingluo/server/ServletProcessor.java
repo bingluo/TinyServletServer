@@ -10,9 +10,11 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
+import cn.seu.bingluo.server.utils.Constants;
+
 public class ServletProcessor {
 
-	public void process(Request request, Response response) {
+	public static void process(Request request, Response response) {
 		String uri = request.getUri();
 		String servletName = uri.substring(uri.lastIndexOf("/") + 1);
 		URLClassLoader loader = null;

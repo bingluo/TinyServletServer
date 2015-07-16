@@ -5,15 +5,25 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletResponse;
 
+import cn.seu.bingluo.server.utils.Constants;
+
 public class Response implements ServletResponse {
 	private Request request = null;
 	private OutputStream out = null;
-	private PrintWriter writer = null;
+	private int bufferSize = 1024;
+	private String content = "";
+	private String encoding = "utf-8";
+	
+	private boolean isCommitted = false;
+	
+	private Map<String, String> headerMap = new HashMap<String, String>();
 
 	public Response(OutputStream out) {
 		this.out = out;
@@ -28,17 +38,16 @@ public class Response implements ServletResponse {
 			return;
 		}
 
-		int BUFFER_SIZE = 1024;
-		byte[] bytes = new byte[BUFFER_SIZE];
+		byte[] bytes = new byte[bufferSize];
 		FileInputStream in = null;
 		try {
 			File file = new File(Constants.WEB_ROOT, request.getUri());
 			if (file.exists()) {
 				in = new FileInputStream(file);
-				int count = in.read(bytes, 0, BUFFER_SIZE);
+				int count = in.read(bytes, 0, bufferSize);
 				while (count != -1) {
 					out.write(bytes);
-					count = in.read(bytes, 0, BUFFER_SIZE);
+					count = in.read(bytes, 0, bufferSize);
 				}
 			} else {
 				String error = "HTTP/1.1 404 File Not Found\r\n"
@@ -60,32 +69,27 @@ public class Response implements ServletResponse {
 
 	@Override
 	public void flushBuffer() throws IOException {
-		// TODO Auto-generated method stub
-
+		out.flush();
 	}
 
 	@Override
 	public int getBufferSize() {
-		// TODO Auto-generated method stub
-		return 0;
+		return bufferSize;
 	}
 
 	@Override
 	public String getCharacterEncoding() {
-		// TODO Auto-generated method stub
-		return null;
+		return encoding;
 	}
 
 	@Override
 	public String getContentType() {
-		// TODO Auto-generated method stub
-		return null;
+		return content+"; charset="+encoding.toUpperCase();
 	}
 
 	@Override
 	public Locale getLocale() {
-		// TODO Auto-generated method stub
-		return null;
+		return Locale.CHINESE;
 	}
 
 	@Override
@@ -96,14 +100,12 @@ public class Response implements ServletResponse {
 
 	@Override
 	public PrintWriter getWriter() throws IOException {
-		writer = new PrintWriter(out, true);
-		return writer;
+		return new PrintWriter(out, true);
 	}
 
 	@Override
 	public boolean isCommitted() {
-		// TODO Auto-generated method stub
-		return false;
+		return isCommitted;
 	}
 
 	@Override
